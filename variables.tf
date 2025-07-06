@@ -1,0 +1,210 @@
+# The display name of the subscription
+variable "display_name" {
+  description = "The display name of the Azure subscription to create"
+  type        = string
+  
+  validation {
+    condition     = length(var.display_name) > 0 && length(var.display_name) <= 64
+    error_message = "Subscription display name must be between 1 and 64 characters."
+  }
+}
+
+# The subscription name (optional, defaults to display_name)
+variable "subscription_name" {
+  description = "The name of the Azure subscription. If empty, will use display_name"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.subscription_name == "" || (length(var.subscription_name) > 0 && length(var.subscription_name) <= 64)
+    error_message = "Subscription name must be between 1 and 64 characters or empty string."
+  }
+}
+
+# The alias for the subscription (optional, for programmatic access)
+variable "alias" {
+  description = "The alias for the Azure subscription (for programmatic access)"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.alias == "" || can(regex("^[a-zA-Z0-9-_]+$", var.alias))
+    error_message = "Subscription alias must contain only alphanumeric characters, hyphens, and underscores."
+  }
+}
+
+# The billing scope ID for the subscription
+variable "billing_scope_id" {
+  description = "The billing scope ID for the Azure subscription"
+  type        = string
+  
+  validation {
+    condition     = can(regex("^/providers/Microsoft\\.Billing/billingAccounts/[^/]+", var.billing_scope_id))
+    error_message = "Billing scope ID must be a valid Azure billing scope resource ID."
+  }
+}
+
+# The workload type for the subscription
+variable "workload_type" {
+  description = "The workload type for the Azure subscription"
+  type        = string
+  default     = "Production"
+  
+  validation {
+    condition     = contains(["Production", "DevTest"], var.workload_type)
+    error_message = "Workload type must be either Production or DevTest."
+  }
+}
+
+# The management group ID to associate the subscription with
+variable "management_group_id" {
+  description = "The management group ID to associate the subscription with. If empty, subscription will remain in tenant root"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition = var.management_group_id == "" || can(regex("^[a-zA-Z0-9-_\\.\\(\\)]+$", var.management_group_id)) || can(regex("^/providers/Microsoft\\.Management/managementGroups/[a-zA-Z0-9-_\\.\\(\\)]+$", var.management_group_id))
+    error_message = "Management group ID must be a simple ID (alphanumeric characters, hyphens, underscores, periods, and parentheses) or a full Azure resource ID."
+  }
+}
+
+# Whether to create a management resource group
+variable "create_management_resource_group" {
+  description = "Whether to create a management resource group in the subscription"
+  type        = bool
+  default     = true
+}
+
+# The name of the management resource group
+variable "management_resource_group_name" {
+  description = "The name of the management resource group. If empty, will be auto-generated"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.management_resource_group_name == "" || can(regex("^[a-zA-Z0-9-_\\.\\(\\)]+$", var.management_resource_group_name))
+    error_message = "Resource group name must contain only alphanumeric characters, hyphens, underscores, periods, and parentheses."
+  }
+}
+
+# The location for the management resource group
+variable "management_resource_group_location" {
+  description = "The Azure region for the management resource group"
+  type        = string
+  default     = "East US"
+  
+  validation {
+    condition     = length(var.management_resource_group_location) > 0
+    error_message = "Management resource group location must be specified."
+  }
+}
+
+# Whether to create a budget for the subscription
+variable "create_budget" {
+  description = "Whether to create a budget for the subscription"
+  type        = bool
+  default     = false
+}
+
+# The name of the budget
+variable "budget_name" {
+  description = "The name of the budget. If empty, will be auto-generated"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.budget_name == "" || can(regex("^[a-zA-Z0-9-_\\.\\(\\)]+$", var.budget_name))
+    error_message = "Budget name must contain only alphanumeric characters, hyphens, underscores, periods, and parentheses."
+  }
+}
+
+# The budget amount
+variable "budget_amount" {
+  description = "The budget amount for the subscription"
+  type        = number
+  default     = 1000
+  
+  validation {
+    condition     = var.budget_amount > 0
+    error_message = "Budget amount must be greater than 0."
+  }
+}
+
+# The budget time grain
+variable "budget_time_grain" {
+  description = "The time grain for the budget (Monthly, Quarterly, Annually)"
+  type        = string
+  default     = "Monthly"
+  
+  validation {
+    condition     = contains(["Monthly", "Quarterly", "Annually"], var.budget_time_grain)
+    error_message = "Budget time grain must be Monthly, Quarterly, or Annually."
+  }
+}
+
+# The budget start date
+variable "budget_start_date" {
+  description = "The start date for the budget (YYYY-MM-DD format)"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.budget_start_date == "" || can(regex("^\\d{4}-\\d{2}-\\d{2}$", var.budget_start_date))
+    error_message = "Budget start date must be in YYYY-MM-DD format or empty string."
+  }
+}
+
+# The budget end date
+variable "budget_end_date" {
+  description = "The end date for the budget (YYYY-MM-DD format). If empty, budget will not expire"
+  type        = string
+  default     = ""
+  
+  validation {
+    condition     = var.budget_end_date == "" || can(regex("^\\d{4}-\\d{2}-\\d{2}$", var.budget_end_date))
+    error_message = "Budget end date must be in YYYY-MM-DD format or empty string."
+  }
+}
+
+# Budget notifications configuration
+variable "budget_notifications" {
+  description = "List of budget notifications to configure"
+  type = list(object({
+    enabled        = bool
+    threshold      = number
+    operator       = string
+    threshold_type = string
+    contact_emails = list(string)
+    contact_groups = list(string)
+    contact_roles  = list(string)
+  }))
+  default = []
+  
+  validation {
+    condition = alltrue([
+      for notification in var.budget_notifications : contains(["EqualTo", "GreaterThan", "GreaterThanOrEqualTo"], notification.operator)
+    ])
+    error_message = "Budget notification operator must be EqualTo, GreaterThan, or GreaterThanOrEqualTo."
+  }
+  
+  validation {
+    condition = alltrue([
+      for notification in var.budget_notifications : contains(["Actual", "Forecasted"], notification.threshold_type)
+    ])
+    error_message = "Budget notification threshold type must be Actual or Forecasted."
+  }
+  
+  validation {
+    condition = alltrue([
+      for notification in var.budget_notifications : notification.threshold > 0 && notification.threshold <= 1000
+    ])
+    error_message = "Budget notification threshold must be between 0 and 1000."
+  }
+}
+
+# Tags to apply to all resources
+variable "tags" {
+  description = "A map of tags to assign to all resources"
+  type        = map(string)
+  default     = {}
+}
