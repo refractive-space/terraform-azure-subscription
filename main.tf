@@ -53,7 +53,7 @@ resource "azurerm_subscription" "this" {
 resource "azurerm_management_group_subscription_association" "this" {
   count                = var.management_group_id != "" ? 1 : 0
   management_group_id  = var.management_group_id
-  subscription_id      = azurerm_subscription.this.subscription_id
+  subscription_id      = "/subscriptions/${azurerm_subscription.this.subscription_id}"
 }
 
 # Create budget for the subscription if specified
