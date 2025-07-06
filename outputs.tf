@@ -19,7 +19,7 @@ output "subscription_name" {
 # The display name of the subscription
 output "display_name" {
   description = "The display name of the Azure subscription"
-  value       = var.display_name
+  value       = local.display_name
 }
 
 # The workload type of the subscription
@@ -50,4 +50,16 @@ output "budget_name" {
 output "budget_amount" {
   description = "The amount of the subscription budget, if created"
   value       = var.create_budget ? var.budget_amount : null
+}
+
+# The generated UUID used for auto-naming
+output "generated_uuid" {
+  description = "The generated UUID used for auto-naming when values are not provided"
+  value       = random_uuid.name.result
+}
+
+# The computed alias used for the subscription
+output "alias" {
+  description = "The alias used for the Azure subscription"
+  value       = local.alias
 }

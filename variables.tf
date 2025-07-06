@@ -1,17 +1,18 @@
 # The display name of the subscription
 variable "display_name" {
-  description = "The display name of the Azure subscription to create"
+  description = "The display name of the Azure subscription to create. If empty, will be auto-generated using random UUID"
   type        = string
+  default     = ""
   
   validation {
-    condition     = length(var.display_name) > 0 && length(var.display_name) <= 64
-    error_message = "Subscription display name must be between 1 and 64 characters."
+    condition     = var.display_name == "" || (length(var.display_name) > 0 && length(var.display_name) <= 64)
+    error_message = "Subscription display name must be between 1 and 64 characters or empty string."
   }
 }
 
 # The subscription name (optional, defaults to display_name)
 variable "subscription_name" {
-  description = "The name of the Azure subscription. If empty, will use display_name"
+  description = "The name of the Azure subscription. If empty, will use display_name or auto-generated UUID"
   type        = string
   default     = ""
   
@@ -23,13 +24,13 @@ variable "subscription_name" {
 
 # The alias for the subscription (optional, for programmatic access)
 variable "alias" {
-  description = "The alias for the Azure subscription (for programmatic access)"
+  description = "The alias for the Azure subscription (for programmatic access). If empty, will be auto-generated using random UUID"
   type        = string
   default     = ""
   
   validation {
     condition     = var.alias == "" || can(regex("^[a-zA-Z0-9-_]+$", var.alias))
-    error_message = "Subscription alias must contain only alphanumeric characters, hyphens, and underscores."
+    error_message = "Subscription alias must contain only alphanumeric characters, hyphens, and underscores or empty string."
   }
 }
 

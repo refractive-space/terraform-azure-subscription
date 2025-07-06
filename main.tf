@@ -1,7 +1,16 @@
+# Generate random UUID for unique naming when values not provided
+resource "random_uuid" "name" {}
+
 # Local values for subscription creation
 locals {
-  # Generate subscription name if not provided using display_name
-  subscription_name = var.subscription_name == "" ? var.display_name : var.subscription_name
+  # Use provided display_name or generated UUID
+  display_name = var.display_name == "" ? random_uuid.name.result : var.display_name
+
+  # Use provided subscription_name, fallback to display_name, or use UUID
+  subscription_name = var.subscription_name == "" ? local.display_name : var.subscription_name
+
+  # Use provided alias or generated UUID
+  alias = var.alias == "" ? random_uuid.name.result : var.alias
   
   # Normalize subscription name for consistent naming (lowercase, spaces to hyphens)
   normalised_name = replace(lower(local.subscription_name), " ", "-")
@@ -12,7 +21,7 @@ locals {
 
 # Create the Azure subscription
 resource "azurerm_subscription" "this" {
-  alias             = var.alias
+  alias             = local.alias
   billing_scope_id  = var.billing_scope_id
   subscription_name = local.subscription_name
   workload          = local.workload_type

@@ -10,12 +10,13 @@ A comprehensive Terraform module for creating and managing Azure subscriptions w
 ## Features
 
 - ✅ **Subscription Creation** - Create Azure subscriptions with comprehensive configuration
+- ✅ **Automatic Naming** - Generate unique names using UUID when not provided
 - ✅ **Management Group Integration** - Associate subscriptions with management groups
-- ✅ **Resource Group Management** - Create management resource groups automatically
 - ✅ **Cost Management** - Set up budgets and cost alerts
 - ✅ **Workload Classification** - Support for Production and DevTest workloads
 - ✅ **Input Validation** - Built-in validation for all inputs
 - ✅ **Flexible Configuration** - Optional components for different use cases
+- ✅ **UUID Generation** - Consistent UUID-based naming for subscription identifiers
 - ✅ **Comprehensive Outputs** - Access all subscription details and metadata
 
 ## Usage
@@ -25,14 +26,32 @@ A comprehensive Terraform module for creating and managing Azure subscriptions w
 ```hcl
 module "development_subscription" {
   source = "your-org/subscription/azure"
-  
+
   display_name      = "Development Subscription"
   billing_scope_id  = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
   workload_type     = "DevTest"
-  
+
   tags = {
     Environment = "Development"
     Team        = "Platform"
+  }
+}
+```
+
+### Auto-Generated Naming Example
+
+```hcl
+module "auto_subscription" {
+  source = "your-org/subscription/azure"
+
+  # All naming fields are optional - UUID will be generated automatically
+  # display_name, subscription_name, and alias will use the same UUID
+  billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
+  workload_type    = "DevTest"
+
+  tags = {
+    Environment = "Testing"
+    Purpose     = "Auto-Generated"
   }
 }
 ```

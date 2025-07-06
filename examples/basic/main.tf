@@ -17,7 +17,8 @@ provider "azurerm" {
 module "subscription" {
   source = "../.."
 
-  display_name     = "Development Subscription"
+  # Note: display_name, subscription_name, and alias are optional
+  # If not provided, they will be auto-generated using a UUID
   billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
   workload_type    = "DevTest"
 
