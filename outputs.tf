@@ -34,24 +34,6 @@ output "management_group_association_id" {
   value       = var.management_group_id != "" ? azurerm_management_group_subscription_association.this[0].id : null
 }
 
-# The management resource group ID (if created)
-output "management_resource_group_id" {
-  description = "The ID of the management resource group, if created"
-  value       = var.create_management_resource_group ? azurerm_resource_group.management[0].id : null
-}
-
-# The management resource group name (if created)
-output "management_resource_group_name" {
-  description = "The name of the management resource group, if created"
-  value       = var.create_management_resource_group ? azurerm_resource_group.management[0].name : null
-}
-
-# The management resource group location (if created)
-output "management_resource_group_location" {
-  description = "The location of the management resource group, if created"
-  value       = var.create_management_resource_group ? azurerm_resource_group.management[0].location : null
-}
-
 # The budget ID (if created)
 output "budget_id" {
   description = "The ID of the subscription budget, if created"

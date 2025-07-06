@@ -27,18 +27,6 @@ resource "azurerm_management_group_subscription_association" "this" {
   subscription_id      = azurerm_subscription.this.subscription_id
 }
 
-# Create resource group for subscription management if specified
-resource "azurerm_resource_group" "management" {
-  count    = var.create_management_resource_group ? 1 : 0
-  name     = var.management_resource_group_name == "" ? "${local.normalised_name}-management-rg" : var.management_resource_group_name
-  location = var.management_resource_group_location
-  tags     = var.tags
-  
-  depends_on = [azurerm_subscription.this]
-  
-  provider = azurerm.subscription
-}
-
 # Create budget for the subscription if specified
 resource "azurerm_consumption_budget_subscription" "this" {
   count           = var.create_budget ? 1 : 0
