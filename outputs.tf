@@ -63,3 +63,27 @@ output "alias" {
   description = "The alias used for the Azure subscription"
   value       = local.alias
 }
+
+# The billing scope ID used for the subscription
+output "billing_scope_id" {
+  description = "The billing scope ID used for the Azure subscription"
+  value       = local.billing_scope_id
+}
+
+# The billing account name (if provided)
+output "billing_account_name" {
+  description = "The billing account name used for the subscription"
+  value       = var.billing_account_name != "" ? var.billing_account_name : null
+}
+
+# The billing profile name (if provided)
+output "billing_profile_name" {
+  description = "The billing profile name used for the subscription"
+  value       = var.billing_profile_name != "" ? var.billing_profile_name : null
+}
+
+# The invoice section name (if provided)
+output "invoice_section_name" {
+  description = "The invoice section name used for the subscription"
+  value       = var.invoice_section_name != "" ? var.invoice_section_name : null
+}

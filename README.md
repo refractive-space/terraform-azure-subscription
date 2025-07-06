@@ -27,9 +27,14 @@ A comprehensive Terraform module for creating and managing Azure subscriptions w
 module "development_subscription" {
   source = "your-org/subscription/azure"
 
-  display_name      = "Development Subscription"
-  billing_scope_id  = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
-  workload_type     = "DevTest"
+  display_name = "Development Subscription"
+
+  # Use billing components (easier than constructing billing_scope_id manually)
+  billing_account_name = "d0af5c57-9e26-51a3-83dd-7016c847c58d:a511b608-e4a4-4ab1-96b7-430b05b7d1a2_2019-05-31"
+  billing_profile_name = "WJSQ-JV2N-BG7-PGB"
+  invoice_section_name = "S3TC-J744-PJA-PGB"
+
+  workload_type = "DevTest"
 
   tags = {
     Environment = "Development"
@@ -46,7 +51,9 @@ module "auto_subscription" {
 
   # All naming fields are optional - UUID will be generated automatically
   # display_name, subscription_name, and alias will use the same UUID
-  billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
+  billing_account_name = "d0af5c57-9e26-51a3-83dd-7016c847c58d:a511b608-e4a4-4ab1-96b7-430b05b7d1a2_2019-05-31"
+  billing_profile_name = "WJSQ-JV2N-BG7-PGB"
+  invoice_section_name = "S3TC-J744-PJA-PGB"
   workload_type    = "DevTest"
 
   tags = {
@@ -56,17 +63,37 @@ module "auto_subscription" {
 }
 ```
 
+### Alternative: Direct Billing Scope ID
+
+```hcl
+module "legacy_subscription" {
+  source = "your-org/subscription/azure"
+
+  display_name = "Legacy Subscription"
+
+  # Use direct billing scope ID (legacy approach)
+  billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX/invoiceSections/S3TC-J744-PJA-PGB"
+
+  workload_type = "Production"
+
+  tags = {
+    Environment = "Production"
+    Team        = "Finance"
+  }
+}
+```
+
 ### With Management Group Association
 
 ```hcl
 module "production_subscription" {
   source = "your-org/subscription/azure"
-  
+
   display_name        = "Production Subscription"
   billing_scope_id    = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
   management_group_id = "production-mg"
   workload_type       = "Production"
-  
+
   tags = {
     Environment = "Production"
     Team        = "Engineering"
@@ -80,17 +107,17 @@ module "production_subscription" {
 ```hcl
 module "sandbox_subscription" {
   source = "your-org/subscription/azure"
-  
+
   display_name     = "Sandbox Subscription"
   billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
   workload_type    = "DevTest"
-  
+
   # Budget configuration
   create_budget    = true
   budget_amount    = 500
   budget_time_grain = "Monthly"
   budget_start_date = "2024-01-01"
-  
+
   budget_notifications = [
     {
       enabled        = true
@@ -111,7 +138,7 @@ module "sandbox_subscription" {
       contact_roles  = ["Contributor"]
     }
   ]
-  
+
   tags = {
     Environment = "Sandbox"
     Purpose     = "Testing"
@@ -124,19 +151,19 @@ module "sandbox_subscription" {
 ```hcl
 module "compliance_subscription" {
   source = "your-org/subscription/azure"
-  
+
   display_name        = "Compliance Subscription"
   subscription_name   = "compliance-sub"
   alias              = "compliance-alias"
   billing_scope_id   = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
   management_group_id = "compliance-mg"
   workload_type      = "Production"
-  
+
   # Management resource group
   create_management_resource_group      = true
   management_resource_group_name        = "compliance-management-rg"
   management_resource_group_location    = "East US"
-  
+
   # Budget configuration
   create_budget     = true
   budget_name       = "compliance-budget"
@@ -144,7 +171,7 @@ module "compliance_subscription" {
   budget_time_grain = "Monthly"
   budget_start_date = "2024-01-01"
   budget_end_date   = "2024-12-31"
-  
+
   budget_notifications = [
     {
       enabled        = true
@@ -156,7 +183,7 @@ module "compliance_subscription" {
       contact_roles  = ["Owner"]
     }
   ]
-  
+
   tags = {
     Environment    = "Compliance"
     BusinessUnit   = "Legal"
@@ -253,6 +280,39 @@ Before using this module, ensure you have:
 2. **Valid billing scope** with available credits or payment method
 3. **Management group structure** (if using management group association)
 4. **Appropriate Azure Provider configuration** with subscription alias support
+
+## Getting Billing Components (Recommended)
+
+Instead of manually constructing the billing scope ID, you can use individual billing components which are easier to obtain and manage:
+
+### Using Azure CLI
+
+```bash
+# Get billing accounts
+az billing account list --query "[].{Name:displayName, Id:name}" -o table
+
+# Get billing profiles for a specific account
+az billing profile list --account-name "YOUR_BILLING_ACCOUNT_NAME" --query "[].{Name:displayName, Id:name}" -o table
+
+# Get invoice sections for a specific billing profile
+az billing invoice-section list --account-name "YOUR_BILLING_ACCOUNT_NAME" --profile-name "YOUR_BILLING_PROFILE_NAME" --query "[].{Name:displayName, Id:name}" -o table
+```
+
+### Using Azure Portal
+
+1. Go to **Cost Management + Billing** in the Azure Portal
+2. Select **Billing scopes** from the left menu
+3. Choose your billing account (this gives you `billing_account_name`)
+4. Select the appropriate billing profile (this gives you `billing_profile_name`)
+5. Choose the invoice section (this gives you `invoice_section_name`)
+
+### Example Values
+
+- **billing_account_name**: `"d0af5c57-9e26-51a3-83dd-7016c847c58d:a511b608-e4a4-4ab1-96b7-430b05b7d1a2_2019-05-31"`
+- **billing_profile_name**: `"WJSQ-JV2N-BG7-PGB"`
+- **invoice_section_name**: `"S3TC-J744-PJA-PGB"`
+
+The module will automatically use the `azurerm_billing_mca_account_scope` data source to construct the proper billing scope ID from these components.
 
 ## Input Validation
 

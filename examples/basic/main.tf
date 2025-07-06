@@ -19,8 +19,13 @@ module "subscription" {
 
   # Note: display_name, subscription_name, and alias are optional
   # If not provided, they will be auto-generated using a UUID
-  billing_scope_id = "/providers/Microsoft.Billing/billingAccounts/12345678-1234-1234-1234-123456789012:12345678-1234-1234-1234-123456789012_2019-05-31/billingProfiles/ABCD-EFGH-XXX-XXX"
-  workload_type    = "DevTest"
+
+  # Use billing components instead of direct billing_scope_id
+  billing_account_name = "d0af5c57-9e26-51a3-83dd-7016c847c58d:a511b608-e4a4-4ab1-96b7-430b05b7d1a2_2019-05-31"
+  billing_profile_name = "WJSQ-JV2N-BG7-PGB"
+  invoice_section_name = "S3TC-J744-PJA-PGB"
+
+  workload_type = "DevTest"
 
   tags = {
     Environment = "Development"
