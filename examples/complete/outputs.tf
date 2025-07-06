@@ -18,15 +18,7 @@ output "management_group_association_id" {
   value       = module.subscription.management_group_association_id
 }
 
-output "management_resource_group_id" {
-  description = "The ID of the management resource group"
-  value       = module.subscription.management_resource_group_id
-}
-
-output "management_resource_group_name" {
-  description = "The name of the management resource group"
-  value       = module.subscription.management_resource_group_name
-}
+# Note: Resource group outputs removed - handle in separate configuration
 
 output "budget_id" {
   description = "The ID of the subscription budget"

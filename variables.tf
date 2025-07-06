@@ -68,36 +68,8 @@ variable "management_group_id" {
   }
 }
 
-# Whether to create a management resource group
-variable "create_management_resource_group" {
-  description = "Whether to create a management resource group in the subscription"
-  type        = bool
-  default     = true
-}
-
-# The name of the management resource group
-variable "management_resource_group_name" {
-  description = "The name of the management resource group. If empty, will be auto-generated"
-  type        = string
-  default     = ""
-  
-  validation {
-    condition     = var.management_resource_group_name == "" || can(regex("^[a-zA-Z0-9-_\\.\\(\\)]+$", var.management_resource_group_name))
-    error_message = "Resource group name must contain only alphanumeric characters, hyphens, underscores, periods, and parentheses."
-  }
-}
-
-# The location for the management resource group
-variable "management_resource_group_location" {
-  description = "The Azure region for the management resource group"
-  type        = string
-  default     = "East US"
-  
-  validation {
-    condition     = length(var.management_resource_group_location) > 0
-    error_message = "Management resource group location must be specified."
-  }
-}
+# Note: Resource group creation within the subscription should be done in a separate
+# configuration after the subscription is created, as it requires subscription-level provider configuration
 
 # Whether to create a budget for the subscription
 variable "create_budget" {

@@ -11,11 +11,8 @@ provider "azurerm" {
   features {}
 }
 
-provider "azurerm" {
-  alias           = "subscription"
-  subscription_id = module.subscription.subscription_id
-  features {}
-}
+# Note: To manage resources within the subscription after creation,
+# configure a separate azurerm provider with the subscription_id
 
 module "subscription" {
   source = "../.."
@@ -27,10 +24,7 @@ module "subscription" {
   management_group_id = "production-mg"
   workload_type      = "Production"
 
-  # Management resource group
-  create_management_resource_group      = true
-  management_resource_group_name        = "production-management-rg"
-  management_resource_group_location    = "East US"
+  # Note: Resource group creation moved to separate configuration
 
   # Budget configuration
   create_budget     = true

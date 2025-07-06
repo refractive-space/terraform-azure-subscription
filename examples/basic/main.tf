@@ -11,11 +11,8 @@ provider "azurerm" {
   features {}
 }
 
-provider "azurerm" {
-  alias           = "subscription"
-  subscription_id = module.subscription.subscription_id
-  features {}
-}
+# Note: To manage resources within the subscription after creation,
+# configure a separate azurerm provider with the subscription_id
 
 module "subscription" {
   source = "../.."
